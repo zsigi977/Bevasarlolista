@@ -1,196 +1,211 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bevásárlólista</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #f2f2f7;
-      color: #000;
-      margin: 0;
-      padding: 20px;
-      min-height: 100vh;
-    }
-    h1, h2 { text-align: center; }
-    .controls { display: flex; gap: 10px; margin-bottom: 15px; }
-    select, input, button { padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
-    button { cursor: pointer; }
-    ul { list-style: none; padding: 0; }
-    li { background: white; padding: 12px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-    .left { display: flex; align-items: center; gap: 10px; }
-    .checked { text-decoration: line-through; color: gray; }
-    .delete { background: none; border: none; font-size: 18px; color: red; }
-  </style>
-
-  <!-- Firebase SDK-k -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bevásárlólista</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icon.png">
+    <style>
+        /* A stílusod változatlan marad... */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f2f2f7; color: #000; margin: 0; padding: 20px; min-height: 100vh; }
+        h1 { text-align: center; }
+        .controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        select, input, button { padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
+        button { cursor: pointer; }
+        ul { list-style: none; padding: 0; }
+        li { background: white; padding: 12px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; cursor: grab; }
+        .left { display: flex; align-items: center; gap: 10px; }
+        .checked { text-decoration: line-through; color: gray; }
+        .delete { background: none; border: none; font-size: 18px; color: red; }
+    </style>
 </head>
 <body>
 
-  <!-- Belépő -->
-  <div id="login" style="text-align:center; margin-top:50px;">
-    <h2>Jelentkezz be a Bevásárlólistához</h2>
-    <input type="email" id="emailInput" placeholder="Email" /><br><br>
-    <input type="password" id="passInput" placeholder="Jelszó" /><br><br>
-    <button onclick="login()">Belépés</button>
+<div id="login" style="text-align:center; margin-top:50px;">
+    <h2>Jelszó a Bevásárlólistához</h2>
+    <input type="password" id="passInput" placeholder="Jelszó" />
+    <button id="loginBtn">Belépés</button>
     <p id="error" style="color:red;"></p>
-  </div>
+</div>
 
-  <!-- Lista alkalmazás -->
-  <div id="app" style="display:none;">
+<div id="app" style="display:none;">
     <h1>🛒 Bevásárlólista</h1>
-
     <div class="controls">
-      <input type="text" id="itemInput" placeholder="Új termék" />
-      <button onclick="addItem()">➕</button>
+        <input type="text" id="itemInput" placeholder="Új termék" />
+        <button id="addBtn">➕</button>
     </div>
-
     <div class="controls">
-      <select id="storeSelect" onchange="sortItems()">
-        <option value="aldi">Aldi</option>
-        <option value="lidl">Lidl</option>
-        <option value="spar">Spar</option>
-      </select>
-      <button onclick="clearList()">🗑️ Lista törlése</button>
+        <select id="storeSelect">
+            <option value="aldi">Aldi</option>
+            <option value="lidl">Lidl</option>
+            <option value="spar">Spar</option>
+        </select>
+        <button id="clearBtn">🗑️ Lista törlése</button>
     </div>
-
     <ul id="list"></ul>
-  </div>
+</div>
 
-  <script>
-    // 🔹 Firebase config – cseréld a saját projekted adataira!
-    const firebaseConfig = {
-      apiKey: "API_KEYED",
-      authDomain: "bevasarlolista-dd660.firebaseapp.com",  // csak a domain, ne a /__/auth/handler!
-      databaseURL: "https://bevasarlolista-dd660-default-rtdb.firebaseio.com",
-      projectId: "bevasarlolista-dd660",
-      storageBucket: "bevasarlolista-dd660.appspot.com",
-      messagingSenderId: "SENDER_ID",
-      appId: "APP_ID"
-    };
+<script type="module">
+    // 1. Firebase importálása
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const database = firebase.database();
+    // 2. SAJÁT KONFIGURÁCIÓD (Másold ki a Firebase Konzolból!)
+const firebaseConfig = {
+  apiKey: "AIzaSyCslE4Kc229j41Sm2l7ovpc_KEWhOb107k",
+  authDomain: "bevasarlolista-dd660.firebaseapp.com",
+  projectId: "bevasarlolista-dd660",
+  storageBucket: "bevasarlolista-dd660.firebasestorage.app",
+  messagingSenderId: "482885096675",
+  appId: "1:482885096675:web:f569deb724cb835358e1d6",
+  measurementId: "G-C6LVZZB2EF"
+};
 
+    // Firebase inicializálása
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const itemsRef = ref(db, 'items');
+
+    const PASSWORD = "999111";
     let items = [];
 
-    // Normálizáló függvény ékezetekhez
+    const storeOrders = {
+        aldi: ["kávé", "tea", "lekvár", "nutella", "mogyoróvaj", "gabonapehely", "keksz", "csoki", "gumicukor", "édesség", "rágcsa", "snack", "chips", "mogyoró", "banán", "alma", "narancs", "citrom", "vérnarancs", "szőlő", "gyümölcs", "mandarin", "gomba", "krumpli", "bor","fehérbor","vörösbor","vodka","gagyi vodka","gagyivodka","pezsgő","sör", "mosogatógép só", "öblítő", "mosószer", "vízkőoldó", "szemeteszsák", "kukászsák", "kukazsák","tisztítószer","mosogatógép kapszula","tusfürdő","sampon","vattapamacs","fogkefe","fogkrém","dezodor","hagyma","fokhagyma","paparika","paradicsom","újhagyma","tök","lilahagyma","répa","leveszölsdég","zeller","passata","paradicsompüré","paradicsom püré","paprikakrém","kukorica","konzerv kukorica","kukorica konzerv","saviubi","savanyú uborka","paprikakrém","paprika krém","gulyáskrém","olivbogyó","olivabogyó","tészta","mamatészta","mama tészta","szarvacska","spagetti","farfelle","penne","rizs","rizsa","tarhonya","cica kaja","pamacskaja","macska kaja","macskakaja","macska alom", "macskaalom", "cica alom", "cicaalom","olaj","olivaolaj","oliva olaj","liszt","só","cukor","barna cukor","vaníliás cukor","aroma","vanília aroma","rum aroma","citromlé","limelé","mirelit","mirelit borsó","borsó","mirelit kukorica","mirelit brokkoli","brokkoli","zöldbab","mirelit zöldbab","mexikói","vegyes zölsdég","mirelit zöldség","hús","csirkecomb","csirke comb","comb","sertés comb","karaj","tarja","oldalas","szűz","hal","lazac","leves mix","levesmix","máj","kolbász","szárazkolbász","száraz kolbász","szalonna","kolozsvári szalonna","császár szalonna","kolozsváriszalonna","császárszalonna","felvágott","sonka","szalámi","virsli","fűszerek","oregáno","kakukkfű","majoranna","bors","tarkabors","színesbors","kapor","fokhagymapor","fokhagyma por","fokhagymagranulátum","fokhagyma granulátum","leveskocka","ketchup","kecsap","majonéz","mustár","sajt","keménysajt","lapka sajt","lapkasajt","parmezán","grana padano","sajtkrém","sajt krém","krémsajt","tejföl","joghurt","tej","tejszín","tejszínhab","tojás","kenyér","kifli","zsemle","tortilla","péksüti","pékcucc","süti","üccsi","üdítő","kóla","cola","narancslé","gyümölcsle","gyümilé","gyömbér","szörp","pink tonik","pinktonik","pink tonic", "tej"],
+        lidl: ["zöldség", "gyümölcs", "kenyér", "tej", "tojás"],
+        spar: ["tej", "kenyér", "tojás", "zöldség", "gyümölcs"]
+    };
+
     function normalize(text) {
-      return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
 
-    // Render
-    function render() {
-      const ul = document.getElementById("list");
-      ul.innerHTML = "";
-      items.forEach(item => {
-        const li = document.createElement("li");
-        li.dataset.id = item.id;
-
-        const left = document.createElement("div");
-        left.className = "left";
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = item.checked;
-        checkbox.onclick = () => toggle(item.id);
-
-        const span = document.createElement("span");
-        span.textContent = item.name;
-        if (item.checked) span.className = "checked";
-
-        left.appendChild(checkbox);
-        left.appendChild(span);
-
-        const del = document.createElement("button");
-        del.textContent = "🗑️";
-        del.className = "delete";
-        del.onclick = () => removeItem(item.id);
-
-        li.appendChild(left);
-        li.appendChild(del);
-        ul.appendChild(li);
-      });
+    // LISTA MENTÉSE FIREBASE-BE
+    function saveToFirebase() {
+        set(itemsRef, items);
     }
 
-    // Firebase mentés
-    function save() {
-      database.ref('items').set(items)
-        .then(() => console.log("Mentve a Firebase-be"))
-        .catch(err => console.error("Hiba a mentésnél:", err));
+    // LISTA BETÖLTÉSE FIREBASE-BŐL (Realtime!)
+    onValue(itemsRef, (snapshot) => {
+        const data = snapshot.val();
+        items = data || [];
+        render();
+    });
+
+    function showApp() {
+        document.getElementById("login").style.display = "none";
+        document.getElementById("app").style.display = "block";
     }
 
-    // Lista funkciók
-    function addItem() {
-      const input = document.getElementById("itemInput");
-      const value = input.value.trim();
-      if (!value) return;
+    window.checkPass = function() {
+        const userPass = document.getElementById("passInput").value;
+        if(userPass === PASSWORD) {
+            localStorage.setItem("bevListaPass", PASSWORD);
+            showApp();
+        } else {
+            document.getElementById("error").textContent = "Helytelen jelszó!";
+        }
+    };
 
-      if (items.some(i => normalize(i.name) === normalize(value))) {
-        alert("Ez az elem már szerepel a listában!");
+    if(localStorage.getItem("bevListaPass") === PASSWORD) {
+        showApp();
+    }
+
+    window.addItem = function() {
+        const input = document.getElementById("itemInput");
+        const value = input.value.trim();
+        if (!value) return;
+
+        const exists = items.some(item => normalize(item.name) === normalize(value));
+        if (exists) {
+            alert("Ez az elem már szerepel a listában!");
+            input.value = "";
+            return;
+        }
+
+        items.push({
+            id: Date.now(),
+            name: value,
+            checked: false
+        });
+
         input.value = "";
-        return;
-      }
+        sortItems(); // Ez hívja meg a save-et
+    };
 
-      items.push({ id: Date.now(), name: value, checked: false });
-      input.value = "";
-      save();
-    }
+    window.toggle = function(id) {
+        const item = items.find(i => i.id === id);
+        if (item) {
+            item.checked = !item.checked;
+            saveToFirebase();
+        }
+    };
 
-    function toggle(id) {
-      const item = items.find(i => i.id === id);
-      if (!item) return;
-      item.checked = !item.checked;
-      save();
-    }
+    window.removeItem = function(id) {
+        items = items.filter(i => i.id !== id);
+        saveToFirebase();
+    };
 
-    function removeItem(id) {
-      items = items.filter(i => i.id !== id);
-      save();
-    }
+    window.clearList = function() {
+        if (!confirm("Biztos törlöd az egész listát?")) return;
+        items = [];
+        saveToFirebase();
+    };
 
-    function clearList() {
-      if (!confirm("Biztos törlöd az egész listát?")) return;
-      items = [];
-      save();
-    }
+    window.sortItems = function() {
+        const store = document.getElementById("storeSelect").value;
+        const order = storeOrders[store];
+        items.sort((a, b) => {
+            const ai = order.map(normalize).indexOf(normalize(a.name));
+            const bi = order.map(normalize).indexOf(normalize(b.name));
+            return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+        });
+        saveToFirebase();
+    };
 
-    function sortItems() {
-      render(); // opcionális
-    }
+    function render() {
+        const ul = document.getElementById("list");
+        ul.innerHTML = "";
+        items.forEach(item => {
+            const li = document.createElement("li");
+            li.dataset.id = item.id;
 
-    // 🔹 Belépés
-    function login() {
-      const email = document.getElementById("emailInput").value;
-      const password = document.getElementById("passInput").value;
+            const left = document.createElement("div");
+            left.className = "left";
 
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-          document.getElementById("login").style.display = "none";
-          document.getElementById("app").style.display = "block";
-        })
-        .catch(error => {
-          document.getElementById("error").textContent = "Helytelen email vagy jelszó!";
-          console.error("Firebase login hiba:", error);
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = item.checked;
+            checkbox.onclick = () => window.toggle(item.id);
+
+            const span = document.createElement("span");
+            span.textContent = item.name;
+            if (item.checked) span.className = "checked";
+
+            left.appendChild(checkbox);
+            left.appendChild(span);
+
+            const del = document.createElement("button");
+            del.textContent = "🗑️";
+            del.className = "delete";
+            del.onclick = () => window.removeItem(item.id);
+
+            li.appendChild(left);
+            li.appendChild(del);
+            ul.appendChild(li);
         });
     }
 
-    // Betöltés Firebase-ből valós időben
-    database.ref('items').on('value', snapshot => {
-      const data = snapshot.val();
-      items = data || [];
-      render();
+    // Eseménykezelők bekötése (mivel module type-ot használunk)
+    document.getElementById("loginBtn").onclick = window.checkPass;
+    document.getElementById("addBtn").onclick = window.addItem;
+    document.getElementById("clearBtn").onclick = window.clearList;
+    document.getElementById("storeSelect").onchange = window.sortItems;
+    document.getElementById("itemInput").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") window.addItem();
     });
 
-    // Enter lenyomásra hozzáadás
-    document.getElementById("itemInput").addEventListener("keypress", e => {
-      if (e.key === "Enter") addItem();
-    });
-  </script>
+</script>
 </body>
 </html>
