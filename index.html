@@ -37,8 +37,8 @@
 <div id="login-section">
     <h1>🛒 Lista</h1>
     <div id="login-form">
-        <input type="text" id="usernameInput" placeholder="Felhasználónév (pl. zsigi)" autocomplete="username" />
-        <input type="password" id="passInput" placeholder="Jelszó" autocomplete="current-password" />
+        <input type="text" id="usernameInput" placeholder="Felhasználónév" />
+        <input type="password" id="passInput" placeholder="Jelszó" />
         <button id="loginBtn" class="btn-primary">Belépés</button>
         <p id="error" style="color:#ff3b30; font-size: 14px; margin-top: 10px;"></p>
     </div>
@@ -89,6 +89,16 @@
     const itemsRef = ref(db, 'items');
 
     let items = [];
+
+    const storeOrders = {
+        aldi: ["kávé", "tea", "lekvár", "nutella", "mogyoróvaj", "gabonapehely", "keksz", "csoki", "gumicukor", "édesség", "rágcsa", "snack", "chips", "mogyoró", "banán", "alma", "narancs", "citrom", "vérnarancs", "szőlő", "gyümölcs", "mandarin", "gomba", "krumpli", "bor","fehérbor","vörösbor","vodka","gagyi vodka","gagyivodka","pezsgő","sör", "mosogatógép só", "öblítő", "mosószer", "vízkőoldó", "szemeteszsák", "kukászsák", "kukazsák","tisztítószer","mosogatógép kapszula","tusfürdő","sampon","vattapamacs","fogkefe","fogkrém","dezodor","hagyma","fokhagyma","paparika","paradicsom","újhagyma","tök","lilahagyma","répa","leveszölsdég","zeller","passata","paradicsompüré","paradicsom püré","paprikakrém","kukorica","konzerv kukorica","kukorica konzerv","saviubi","savanyú uborka","paprikakrém","paprika krém","gulyáskrém","olivbogyó","olivabogyó","tészta","mamatészta","mama tészta","szarvacska","spagetti","farfelle","penne","rizs","rizsa","tarhonya","cica kaja","pamacskaja","macska kaja","macskakaja","macska alom", "macskaalom", "cica alom", "cicaalom","olaj","olivaolaj","oliva olaj","liszt","só","cukor","barna cukor","vaníliás cukor","aroma","vanília aroma","rum aroma","citromlé","limelé","mirelit","mirelit borsó","borsó","mirelit kukorica","mirelit brokkoli","brokkoli","zöldbab","mirelit zöldbab","mexikói","vegyes zölsdég","mirelit zöldség","hús","csirkecomb","csirke comb","comb","sertés comb","karaj","tarja","oldalas","szűz","hal","lazac","leves mix","levesmix","máj","kolbász","szárazkolbász","száraz kolbász","szalonna","kolozsvári szalonna","császár szalonna","kolozsváriszalonna","császárszalonna","felvágott","sonka","szalámi","virsli","fűszerek","oregáno","kakukkfű","majoranna","bors","tarkabors","színesbors","kapor","fokhagymapor","fokhagyma por","fokhagymagranulátum","fokhagyma granulátum","leveskocka","ketchup","kecsap","majonéz","mustár","sajt","keménysajt","lapka sajt","lapkasajt","parmezán","grana padano","sajtkrém","sajt krém","krémsajt","tejföl","joghurt","tej","tejszín","tejszínhab","tojás","kenyér","kifli","zsemle","tortilla","péksüti","pékcucc","süti","üccsi","üdítő","kóla","cola","narancslé","gyümölcsle","gyümilé","gyömbér","szörp","pink tonik","pinktonik","pink tonic", "tej"],
+        lidl: ["zöldség", "gyümölcs", "kenyér", "tej", "tojás"],
+        spar: ["tej", "kenyér", "tojás", "zöldség", "gyümölcs"]
+    };
+
+    function normalize(text) {
+        return text ? text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
+    }
 
     // --- BELÉPÉSI LOGIKA ---
     onAuthStateChanged(auth, (user) => {
@@ -149,7 +159,10 @@
 
     window.toggle = (id) => {
         const item = items.find(i => i.id === id);
-        if (item) { item.checked = !item.checked; save(); }
+        if (item) { 
+            item.checked = !item.checked; 
+            save(); 
+        }
     };
 
     window.removeItem = (id) => {
@@ -158,11 +171,23 @@
     };
 
     window.clearList = () => {
-        if (confirm("Törlöd a teljes listát?")) { items = []; save(); }
+        if (confirm("Törlöd a teljes listát?")) { 
+            items = []; 
+            save(); 
+        }
     };
 
     window.sortItems = () => {
-        // ... (Ide jön a korábbi boltok szerinti rendezésed)
+        const store = document.getElementById("storeSelect").value;
+        const order = storeOrders[store];
+        items.sort((a, b) => {
+            const ai = order.map(normalize).indexOf(normalize(a.name));
+            const bi = order.map(normalize).indexOf(normalize(b.name));
+            // Ha nincs a listában, menjen a végére (999)
+            const posA = ai === -1 ? 999 : ai;
+            const posB = bi === -1 ? 999 : bi;
+            return posA - posB;
+        });
         save();
     };
 
@@ -173,21 +198,24 @@
             const li = document.createElement("li");
             li.innerHTML = `
                 <div class="left">
-                    <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggle(${item.id})">
+                    <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="window.toggle(${item.id})">
                     <span class="${item.checked ? 'checked' : ''}">${item.name}</span>
                 </div>
-                <button class="delete" onclick="removeItem(${item.id})">🗑️</button>
+                <button class="delete" onclick="window.removeItem(${item.id})">🗑️</button>
             `;
             ul.appendChild(li);
         });
     }
 
-    // Gombok bekötése
+    // Eseménykezelők bekötése
     document.getElementById("loginBtn").onclick = window.login;
     document.getElementById("logoutBtn").onclick = window.logout;
     document.getElementById("addBtn").onclick = window.addItem;
     document.getElementById("clearBtn").onclick = window.clearList;
-    document.getElementById("itemInput").onkeypress = (e) => e.key === "Enter" && window.addItem();
+    document.getElementById("storeSelect").onchange = window.sortItems;
+    document.getElementById("itemInput").onkeypress = (e) => {
+        if (e.key === "Enter") window.addItem();
+    };
 
 </script>
 </body>
