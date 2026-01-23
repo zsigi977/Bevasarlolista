@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bevásárlólista</title>
-		<link rel="apple-touch-icon" href="icon.png">
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -62,6 +61,7 @@
       margin-top: 20px;
       text-align: center;
     }
+	<link rel="apple-touch-icon" href="icon.png">
   </style>
 </head>
 <body>
@@ -85,6 +85,21 @@
   <ul id="list"></ul>
 
   <script>
+   const PASSWORD = "999111";
+
+// Ellenőrizzük, van-e már tárolt helyes jelszó
+const savedPass = localStorage.getItem("bevListaPass");
+
+if (savedPass !== PASSWORD) {
+  const userPass = prompt("Add meg a jelszót a Bevásárlólistához:");
+  if (userPass !== PASSWORD) {
+    alert("Hozzáférés megtagadva!");
+    document.body.innerHTML = "<h1>Hozzáférés megtagadva</h1>";
+    throw "Hozzáférés megtagadva";
+  }
+  // Ha jó a jelszó, elmentjük a localStorage-ba
+  localStorage.setItem("bevListaPass", PASSWORD);
+}
     let items = JSON.parse(localStorage.getItem("items")) || [];
 
     const storeOrders = {
