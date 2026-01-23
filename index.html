@@ -4,10 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bevásárlólista</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="icon.png">
-
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -17,64 +13,30 @@
       padding: 20px;
       min-height: 100vh;
     }
-    h1 {
-      text-align: center;
-    }
-    .controls {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-    select, input, button {
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-    button {
-      cursor: pointer;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      background: white;
-      padding: 12px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      cursor: grab;
-    }
-    .left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .checked {
-      text-decoration: line-through;
-      color: gray;
-    }
-    .delete {
-      background: none;
-      border: none;
-      font-size: 18px;
-      color: red;
-    }
+    h1, h2 { text-align: center; }
+    .controls { display: flex; gap: 10px; margin-bottom: 15px; }
+    select, input, button { padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
+    button { cursor: pointer; }
+    ul { list-style: none; padding: 0; }
+    li { background: white; padding: 12px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .left { display: flex; align-items: center; gap: 10px; }
+    .checked { text-decoration: line-through; color: gray; }
+    .delete { background: none; border: none; font-size: 18px; color: red; }
   </style>
 
   <!-- Firebase SDK-k -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
-  <!-- Belépő jelszó -->
+
+  <!-- Belépő -->
   <div id="login" style="text-align:center; margin-top:50px;">
-    <h2>Jelszó a Bevásárlólistához</h2>
-    <input type="password" id="passInput" placeholder="Jelszó" />
-    <button onclick="checkPass()">Belépés</button>
+    <h2>Jelentkezz be a Bevásárlólistához</h2>
+    <input type="email" id="emailInput" placeholder="Email" /><br><br>
+    <input type="password" id="passInput" placeholder="Jelszó" /><br><br>
+    <button onclick="login()">Belépés</button>
     <p id="error" style="color:red;"></p>
   </div>
 
@@ -100,58 +62,35 @@
   </div>
 
   <script>
-    const PASSWORD = "999111";
-    let items = [];
-
-    // Firebase config (sajátodat cseréld)
+    // Firebase config – cseréld a sajátodra
     const firebaseConfig = {
-      apiKey: "AIzaSyCslE4Kc229j41Sm2l7ovpc_KEWhOb107k",
-      authDomain: "bevasarlolista-dd660.firebaseapp.com",
-      projectId: "bevasarlolista-dd660",
-      storageBucket: "bevasarlolista-dd660.appspot.com",
-      messagingSenderId: "482885096675",
-      appId: "1:482885096675:web:f569deb724cb835358e1d6",
-      measurementId: "G-C6LVZZB2EF"
+      apiKey: "API_KEYED",
+      authDomain: "PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://PROJECT_ID-default-rtdb.firebaseio.com",
+      projectId: "PROJECT_ID",
+      storageBucket: "PROJECT_ID.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const database = firebase.database();
+
+    let items = [];
 
     // Normálizáló függvény ékezetekhez
     function normalize(text) {
       return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
 
-    // Megjelenítés
+    // Render
     function render() {
       const ul = document.getElementById("list");
       ul.innerHTML = "";
       items.forEach(item => {
         const li = document.createElement("li");
-        li.draggable = true;
         li.dataset.id = item.id;
-
-        li.addEventListener("dragstart", e => {
-          e.dataTransfer.setData("text/plain", item.id);
-        });
-
-        li.addEventListener("dragover", e => e.preventDefault());
-
-        li.addEventListener("drop", e => {
-          e.preventDefault();
-          const draggedId = parseInt(e.dataTransfer.getData("text/plain"));
-          const draggedIndex = items.findIndex(i => i.id === draggedId);
-          const targetIndex = items.findIndex(i => i.id === item.id);
-          if (draggedIndex === -1) {
-            const newItem = { id: draggedId, name: "Új elem", checked: false };
-            items.splice(targetIndex, 0, newItem);
-          } else {
-            const [moved] = items.splice(draggedIndex, 1);
-            items.splice(targetIndex, 0, moved);
-          }
-          save();
-        });
 
         const left = document.createElement("div");
         left.className = "left";
@@ -179,7 +118,7 @@
       });
     }
 
-    // Mentés Firebase-be
+    // Firebase mentés
     function save() {
       database.ref('items').set(items);
     }
@@ -190,8 +129,7 @@
       const value = input.value.trim();
       if (!value) return;
 
-      const exists = items.some(item => normalize(item.name) === normalize(value));
-      if (exists) {
+      if (items.some(i => normalize(i.name) === normalize(value))) {
         alert("Ez az elem már szerepel a listában!");
         input.value = "";
         return;
@@ -204,6 +142,7 @@
 
     function toggle(id) {
       const item = items.find(i => i.id === id);
+      if (!item) return;
       item.checked = !item.checked;
       save();
     }
@@ -220,23 +159,23 @@
     }
 
     function sortItems() {
-      // Ez opcionális, később implementálható store sorrend
-      render();
+      render(); // opcionális
     }
 
-    // Belépés kezelése
-    function showApp() {
-      document.getElementById("login").style.display = "none";
-      document.getElementById("app").style.display = "block";
-    }
+    // Belépés
+    function login() {
+      const email = document.getElementById("emailInput").value;
+      const password = document.getElementById("passInput").value;
 
-    function checkPass() {
-      const userPass = document.getElementById("passInput").value;
-      if (userPass === PASSWORD) {
-        showApp();
-      } else {
-        document.getElementById("error").textContent = "Helytelen jelszó!";
-      }
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          document.getElementById("login").style.display = "none";
+          document.getElementById("app").style.display = "block";
+        })
+        .catch(error => {
+          document.getElementById("error").textContent = "Helytelen email vagy jelszó!";
+          console.error(error);
+        });
     }
 
     // Betöltés Firebase-ből valós időben
@@ -250,6 +189,7 @@
     document.getElementById("itemInput").addEventListener("keypress", e => {
       if (e.key === "Enter") addItem();
     });
+
   </script>
 </body>
 </html>
