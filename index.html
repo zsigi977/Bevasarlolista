@@ -31,7 +31,7 @@
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             width: 90%; max-width: 400px;
             margin-top: 20px;
-            position: relative; /* Fontos az ajánló pozícionálásához */
+            position: relative;
         }
 
         h1 { text-align: center; margin-bottom: 20px; font-size: 24px; }
@@ -46,29 +46,20 @@
         button { padding: 12px; border-radius: 10px; border: none; cursor: pointer; font-size: 16px; }
         .btn-primary { background: #007aff; color: white; font-weight: 600; }
         
-        /* EGYEDI AJÁNLÓ LISTA STÍLUSA */
         #custom-suggestions {
             position: absolute;
-            top: 50px; /* Pontosan az input alatt */
-            left: 0;
-            width: calc(100% - 55px); /* Az input szélességéhez igazodik (mínusz a gomb) */
+            top: 50px; left: 0;
+            width: calc(100% - 55px);
             background: white;
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             z-index: 1000;
             max-height: 200px;
             overflow-y: auto;
-            display: none; /* Alapból rejtve */
+            display: none;
         }
 
-        .suggestion-item {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 16px; }
         .suggestion-item:active { background: #f0f0f0; }
 
         ul { list-style: none; padding: 0; margin-top: 10px; }
@@ -79,7 +70,8 @@
         }
 
         .drag-handle { cursor: grab; padding: 0 10px; color: #bbb; font-size: 20px; user-select: none; }
-        .checked { text-decoration: line-through; color: #8e8e93; }
+        .checked { text-decoration: line-through; color: #8e8e93 !important; }
+        .qty-tag { color: #007aff; font-weight: bold; margin-right: 5px; font-size: 14px; }
         .delete { background: none; font-size: 20px; color: #ff3b30; margin-left: auto; padding: 5px; }
         
         .logout-container { 
@@ -110,8 +102,9 @@
     <h1>Bevásárlólista</h1>
     
     <div class="controls">
-        <input type="text" id="itemInput" placeholder="Új termék..." autocomplete="off" />
-        <div id="custom-suggestions"></div> <button id="addBtn" class="btn-primary">➕</button>
+        <input type="text" id="itemInput" placeholder="Pl: 2 tej vagy 0.5 kg kenyér" autocomplete="off" />
+        <div id="custom-suggestions"></div>
+        <button id="addBtn" class="btn-primary">➕</button>
     </div>
 
     <div class="controls">
@@ -153,7 +146,7 @@
     const storeOrders = {
         aldi: ["kávé","tea","méz","lekvár","nutella","mogyoróvaj","gabonapehely","keksz","csoki","gumicukor","édesség","rágcsa","snack","chips","aszalt gyümölcs","mogyoró","banán","alma","narancs","citrom","vérnarancs","szőlő","gyümölcs","mandarin","gomba","krumpli","bor","fehérbor","vörösbor","vodka","gagyi vodka","gagyivodka","pezsgő","sör","mosogatógép só","öblítő","mosószer","vízkőoldó","szemeteszsák","papírtörlő","wcpapír","wc papír","kukászsák","kukazsák","tisztítószer","mosogatógép kapszula","tusfürdő","sampon","vattapamacs","fogkefe","fogkrém","dezodor","hagyma","fokhagyma","paprika","paradicsom","újhagyma","tök","lilahagyma","répa","leveszölsdég","zeller","passata","paradicsompüré","paradicsom püré","paprikakrém","kukorica","konzerv kukorica","kukorica konzerv","saviubi","savanyú uborka","paprikakrém","paprika krém","gulyáskrém","olivbogyó","olivabogyó","tészta","mamatészta","mama tészta","szarvacska","spagetti","farfelle","penne","rizs","rizsa","tarhonya","cica kaja","pamacskaja","macska kaja","macskakaja","macska alom","macskaalom","cica alom","cicaalom","olaj","olivaolaj","oliva olaj","ecet","liszt","prézli","zsemlemorzsa","só","cukor","barna cukor","vaníliás cukor","aroma","vanília aroma","rum aroma","citromlé","limelé","mirelit","mirelit borsó","borsó","mirelit kukorica","mirelit brokkoli","brokkoli","zöldbab","mirelit zöldbab","mexikói","vegyes zölsdég","mirelit zöldség","hús","csirkecomb","csirke comb","comb","sertés comb","karaj","tarja","oldalas","szűz","hal","lazac","leves mix","levesmix","máj","kolbász","szárazkolbász","száraz kolbász","szalonna","kolozsvári szalonna","császár szalonna","kolozsváriszalonna","császárszalonna","felvágott","sonka","szalámi","virsli","fűszerek","oregáno","kakukkfű","majoranna","rozmaring","kömény","fűszerkömény","pirospaprika","füstöltpaprika","füstölt paprika","bors","tarkabors","színesbors","kapor","fokhagymapor","fokhagyma por","fokhagymagranulátum","fokhagyma granulátum","leveskocka","ketchup","kecsap","majonéz","mustár","sajt","keménysajt","lapka sajt","lapkasajt","parmezán","grana padano","sajtkrém","sajt krém","krémsajt","tejföl","joghurt","tej","tejszín","tejszínhab","tojás","kenyér","kifli","zsemle","tortilla","péksüti","pékcucc","süti","üccsi","üdítő","kóla","cola","narancslé","gyümölcsle","gyümilé","gyömbér","szörp","pink tonik","pinktonik","pink tonic","tej"],
         penny: ["mogyoró","aszalt gyümölcs","banán","alma","narancs","citrom","vérnarancs","szőlő","gyümölcs","mandarin","gomba","krumpli","hagyma","fokhagyma","paprika","paradicsom","újhagyma","tök","lilahagyma","répa","leveszölsdég","zeller","tojás","gabonapehely","lekvár","nutella","méz","kávé","tea","citromlé","limelé","keksz","csoki","gumicukor","édesség","rágcsa","snack","chips","üccsi","üdítő","kóla","cola","narancslé","gyümölcsle","gyümilé","gyömbér","szörp","pink tonik","pinktonik","pink tonic","bor","fehérbor","vörösbor","vodka","gagyi vodka","gagyivodka","pezsgő","sör","tészta","mamatészta","mama tészta","szarvacska","spagetti","farfelle","penne","rizs","rizsa","tarhonya","fűszerek","oregáno","kakukkfű","majoranna","rozmaring","kömény","fűszerkömény","pirospaprika","füstöltpaprika","füstölt paprika","bors","tarkabors","színesbors","kapor","fokhagymapor","fokhagyma por","fokhagymagranulátum","fokhagyma granulátum","kenyér","kifli","zsemle","tortilla","péksüti","pékcucc","süti","olaj","olivaolaj","oliva olaj","ecet","passata","paradicsompüré","paradicsom püré","paprikakrém","ketchup","kecsap","majonéz","mustár","kukorica","konzerv kukorica","kukorica konzerv","saviubi","savanyú uborka","mogyoróvaj","paprikakrém","paprika krém","gulyáskrém","olivbogyó","olivabogyó","sajt","keménysajt","lapka sajt","lapkasajt","parmezán","grana padano","sajtkrém","sajt krém","krémsajt","tejföl","joghurt","tej","tejszín","tejszínhab","liszt","só","cukor","barna cukor","prézli","zsemlemorzsa","vaníliás cukor","aroma","vanília aroma","rum aroma","hús","csirkecomb","csirke comb","comb","sertés comb","karaj","tarja","oldalas","szűz","hal","lazac","leves mix","levesmix","máj","kolbász","szárazkolbász","száraz kolbász","szalonna","kolozsvári szalonna","császár szalonna","kolozsváriszalonna","császárszalonna","felvágott","sonka","szalámi","virsli","leveskocka","mirelit","mirelit borsó","borsó","mirelit kukorica","mirelit brokkoli","brokkoli","zöldbab","mirelit zöldbab","mexikói","vegyes zölsdég","mirelit zöldség","mosogatógép só","öblítő","mosószer","vízkőoldó","szemeteszsák","papírtörlő","wcpapír","wc papír","kukászsák","kukazsák","tisztítószer","mosogatógép kapszula","tusfürdő","sampon","vattapamacs","fogkefe","fogkrém","dezodor","cica kaja","pamacskaja","macska kaja","macskakaja","macska alom","macskaalom","cica alom","cicaalom"],
-        spar: ["mogyoró","aszalt gyümölcs","banán","alma","narancs","citrom","vérnarancs","szőlő","gyümölcs","mandarin","gomba","krumpli","hagyma","fokhagyma","paprika","paradicsom","újhagyma","tök","lilahagyma","répa","leveszölsdég","zeller","tojás","sajt","keménysajt","lapka sajt","lapkasajt","parmezán","grana padano","sajtkrém","sajt krém","krémsajt","tejföl","joghurt","tej","tejszín","tejszínhab","liszt","só","cukor","barna cukor","prézli","zsemlemorzsa","kávé","tea","méz","citromlé","limelé","gabonapehely","keksz","csoki","gumicukor","édesség","rágcsa","snack","chips","vaníliás cukor","aroma","vanília aroma","rum aroma","kenyér","kifli","zsemle","tortilla","péksüti","pékcucc","süti","olaj","olivaolaj","oliva olaj","ecet","passata","paradicsompüré","paradicsom püré","paprikakrém","ketchup","kecsap","majonéz","mustár","kukorica","konzerv kukorica","kukorica konzerv","saviubi","savanyú uborka","lekvár","nutella","mogyoróvaj","paprikakrém","paprika krém","gulyáskrém","olivbogyó","olivabogyó","tészta","mamatészta","mama tészta","szarvacska","spagetti","farfelle","penne","rizs","rizsa","tarhonya","fűszerek","oregáno","kakukkfű","majoranna","rozmaring","kömény","fűszerkömény","pirospaprika","füstöltpaprika","füstölt paprika","bors","tarkabors","színesbors","kapor","fokhagymapor","fokhagyma por","fokhagymagranulátum","fokhagyma granulátum","hús","csirkecomb","csirke comb","comb","sertés comb","karaj","tarja","oldalas","szűz","hal","lazac","leves mix","levesmix","máj","kolbász","szárazkolbász","száraz kolbász","szalonna","kolozsvári szalonna","császár szalonna","kolozsváriszalonna","császárszalonna","felvágott","sonka","szalámi","virsli","leveskocka","üccsi","üdítő","kóla","cola","narancslé","gyümölcsle","gyümilé","gyömbér","szörp","pink tonik","pinktonik","pink tonic","bor","fehérbor","vörösbor","vodka","gagyi vodka","gagyivodka","pezsgő","sör","mirelit","mirelit borsó","borsó","mirelit kukorica","mirelit brokkoli","brokkoli","zöldbab","mirelit zöldbab","mexikói","vegyes zölsdég","mirelit zöldség","mosogatógép só","öblítő","mosószer","vízkőoldó","szemeteszsák","papírtörlő","wcpapír","wc papír","kukászsák","kukazsák","tisztítószer","mosogatógép kapszula","tusfürdő","sampon","vattapamacs","fogkefe","fogkrém","dezodor","cica kaja","pamacskaja","macska kaja","macskakaja","macska alom","macskaalom","cica alom","cicaalom"],
+        spar: ["mogyoró","aszalt gyümölcs","banán","alma","narancs","citrom","vérnarancs","szőlő","gyümölcs","mandarin","gomba","krumpli","hagyma","fokhagyma","paprika","paradicsom","újhagyma","tök","lilahagyma","répa","leveszölsdég","zeller","tojás","sajt","keménysajt","lapka sajt","lapkasajt","parmezán","grana padano","sajtkrém","sajt krém","krémsajt","tejföl","joghurt","tej","tejszín","tejszínhab","liszt","só","cukor","barna cukor","prézli","zsemlemorzsa","kávé","tea","méz","citromlé","limelé","gabonapehely","keksz","csoki","gumicukor","édesség","rágcsa","snack","chips","vaníliás cukor","aroma","vanília aroma","rum aroma","kenyér","kifli","zsemle","tortilla","péksüti","pékcucc","süti","olaj","olivaolaj","oliva olaj","ecet","passata","paradicsompüré","paradicsom püré","paprikakrém","ketchup","kecsap","majonéz","mustár","kukorica","konzerv kukorica","kukorica konzerv","saviubi","savanyú uborka","lekvár","nutella","mogyoróvaj","paprikakrém","paprika krém","gulyáskrém","olivbogyó","olivabogyó","tészta","mamatészta","mama tészta","szarvacska","spagetti","farfelle","penne","rizs","rizsa","tarhonya","fűszerek","oregáno","kakukkfű","majoranna","rozmaring","kömény","fűszerkömény","pirospaprika","füstöltpaprika","füstölt paprika","bors","tarkabors","színesbors","kapor","fokhagymapor","fokhagma por","fokhagymagranulátum","fokhagyma granulátum","hús","csirkecomb","csirke comb","comb","sertés comb","karaj","tarja","oldalas","szűz","hal","lazac","leves mix","levesmix","máj","kolbász","szárazkolbász","száraz kolbász","szalonna","kolozsvári szalonna","császár szalonna","kolozsváriszalonna","császárszalonna","felvágott","sonka","szalámi","virsli","leveskocka","üccsi","üdítő","kóla","cola","narancslé","gyümölcsle","gyümilé","gyömbér","szörp","pink tonik","pinktonik","pink tonic","bor","fehérbor","vörösbor","vodka","gagyi vodka","gagyivodka","pezsgő","sör","mirelit","mirelit borsó","borsó","mirelit kukorica","mirelit brokkoli","brokkoli","zöldbab","mirelit zöldbab","mexikói","vegyes zölsdég","mirelit zöldség","mosogatógép só","öblítő","mosószer","vízkőoldó","szemeteszsák","papírtörlő","wcpapír","wc papír","kukászsák","kukazsák","tisztítószer","mosogatógép kapszula","tusfürdő","sampon","vattapamacs","fogkefe","fogkrém","dezodor","cica kaja","pamacskaja","macska kaja","macskakaja","macska alom","macskaalom","cica alom","cicaalom"],
     };
 
     function normalize(text) {
@@ -167,12 +160,15 @@
         allProductDatabase = Array.from(allProducts).sort();
     }
 
-    // SAJÁT AJÁNLÓ FRISSÍTÉSE
     function updateSuggestions(searchValue) {
         const container = document.getElementById("custom-suggestions");
         container.innerHTML = "";
         
-        const term = normalize(searchValue);
+        // Trükk: ha számmal kezdődik a bevitel, csak a szöveges részt nézzük az ajánlóhoz
+        let term = normalize(searchValue);
+        const match = term.match(/^[\d.,/ ]*(db|kg|l|liter|g|cs)?\s*(.*)$/i);
+        if (match && match[2]) term = match[2];
+
         if (term.length < 2) {
             container.style.display = "none";
             return;
@@ -187,7 +183,12 @@
                 div.className = "suggestion-item";
                 div.textContent = product;
                 div.onclick = () => {
-                    document.getElementById("itemInput").value = product;
+                    // Ha volt beírva mennyiség, azt tartsuk meg!
+                    const currentVal = document.getElementById("itemInput").value;
+                    const qMatch = currentVal.match(/^([\d.,/ ]+(db|kg|l|liter|g|cs)?\s*)/i);
+                    const prefix = qMatch ? qMatch[1] : "";
+                    
+                    document.getElementById("itemInput").value = prefix + product;
                     container.style.display = "none";
                     window.addItem();
                 };
@@ -231,9 +232,27 @@
 
     window.addItem = function() {
         const input = document.getElementById("itemInput");
-        const val = input.value.trim();
+        let val = input.value.trim();
         if (!val) return;
-        items.push({ id: Date.now(), name: val, checked: false });
+
+        // FELISMERŐ LOGIKA: (szám + választható mértékegység) + terméknév
+        const quantityMatch = val.match(/^([\d.,/ ]+(db|kg|l|liter|g|cs)?)\s+(.*)$/i);
+        
+        let quantity = "";
+        let itemName = val;
+
+        if (quantityMatch) {
+            quantity = quantityMatch[1].trim(); 
+            itemName = quantityMatch[3].trim(); 
+        }
+
+        items.push({ 
+            id: Date.now(), 
+            name: itemName, 
+            qty: quantity,
+            checked: false 
+        });
+
         input.value = "";
         document.getElementById("custom-suggestions").style.display = "none";
         window.sortItems();
@@ -276,9 +295,12 @@
             li.dataset.id = item.id;
             li.innerHTML = `
                 <div class="drag-handle">☰</div>
-                <div style="flex:1; display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="window.toggle(${item.id})">
+                <div style="flex:1; display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="window.toggle(${item.id})">
                     <span style="font-size:22px;">${item.checked ? "✅" : "⚪"}</span>
-                    <span class="${item.checked ? 'checked' : ''}">${item.name}</span>
+                    <span class="${item.checked ? 'checked' : ''}">
+                        ${item.qty ? `<span class="qty-tag">${item.qty}</span>` : ''} 
+                        ${item.name}
+                    </span>
                 </div>
                 <button class="delete" onclick="window.removeItem(${item.id})">🗑️</button>
             `;
@@ -314,7 +336,6 @@
     itemInput.oninput = (e) => updateSuggestions(e.target.value);
     itemInput.onkeypress = (e) => { if(e.key === "Enter") window.addItem(); };
 
-    // Bezárjuk a listát, ha máshova kattintunk
     document.addEventListener("click", (e) => {
         if (e.target.id !== "itemInput") {
             document.getElementById("custom-suggestions").style.display = "none";
