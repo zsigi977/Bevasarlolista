@@ -14,104 +14,86 @@
     <link rel="shortcut icon" href="icon.png">
     
     <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            /* Háttérkép beállítása */
-            background-image: url('hatter.png');
-            background-repeat: repeat;
-            background-attachment: fixed;
-            background-size: 300px; /* Itt állíthatod a mintázat méretét */
-            color: #000; 
-            margin: 0; 
-            padding: 20px; 
-            min-height: 100vh; 
-            -webkit-tap-highlight-color: transparent; 
-        }
-
-        /* Konténer, ami segít az olvashatóságban a háttér előtt */
-        .glass-container {
-            background: rgba(242, 242, 247, 0.9);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            border-radius: 20px;
+        /* Alap testreszabás és háttér */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: url('hatter.png') no-repeat center center;
+            background-size: cover;
+            color: #000;
+            margin: 0;
             padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 500px;
-            margin: 0 auto;
+            min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         h1 { text-align: center; margin-top: 10px; }
+
+        /* Üvegkonténer */
+        #login-section, #app {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 400px;
+        }
+
         .controls { display: flex; gap: 10px; margin-bottom: 15px; }
-        
-        select, input, button { 
-            padding: 12px; 
-            border-radius: 10px; 
-            border: 1px solid #ccc; 
-            font-size: 16px; 
-            outline: none;
-        }
-
-        /* Ez fixálja az írási problémát mobilon */
-        input[type="text"], input[type="password"] {
-            background: #fff !important;
-            opacity: 1 !important;
-            -webkit-user-select: text !important;
-            user-select: text !important;
-        }
-
-        input:focus { border-color: #007aff; box-shadow: 0 0 0 2px rgba(0,122,255,0.2); }
+        select, input, button { padding: 12px; border-radius: 10px; border: 1px solid #ccc; font-size: 16px; outline: none; }
+        input { background: white; -webkit-appearance: none; }
+        input:focus { border-color: #007aff; }
         button { cursor: pointer; background: #fff; transition: opacity 0.2s; }
         button:active { opacity: 0.7; }
         .btn-primary { background: #007aff; color: white; border: none; font-weight: 600; }
-        
         ul { list-style: none; padding: 0; }
         li { background: white; padding: 14px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .left { display: flex; align-items: center; gap: 12px; font-size: 17px; }
         .checked { text-decoration: line-through; color: #8e8e93; }
         .delete { background: none; border: none; font-size: 20px; color: #ff3b30; padding: 5px; }
-        
-        #login-section { max-width: 320px; margin: 60px auto; text-align: center; }
         #login-form { display: flex; flex-direction: column; gap: 12px; }
-        .logout-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: rgba(0,0,0,0.05); padding: 8px 12px; border-radius: 10px; font-size: 13px; }
+        .logout-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: rgba(229, 229, 234, 0.7); padding: 8px 12px; border-radius: 10px; font-size: 13px; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
     </style>
 </head>
 <body>
 
-<div class="glass-container">
-    <div id="login-section">
-        <h1>🛒 Lista</h1>
-        <div id="login-form">
-            <input type="text" id="usernameInput" placeholder="Felhasználónév" autocorrect="off" autocapitalize="none" />
-            <input type="password" id="passInput" placeholder="Jelszó" />
-            <button id="loginBtn" class="btn-primary">Belépés</button>
-            <p id="error" style="color:#ff3b30; font-size: 14px; margin-top: 10px;"></p>
-        </div>
+<div id="login-section">
+    <h1>🛒 Lista</h1>
+    <div id="login-form">
+        <input type="text" id="usernameInput" placeholder="Felhasználónév" autocorrect="off" autocapitalize="none" />
+        <input type="password" id="passInput" placeholder="Jelszó" />
+        <button id="loginBtn" class="btn-primary">Belépés</button>
+        <p id="error" style="color:#ff3b30; font-size: 14px; margin-top: 10px;"></p>
+    </div>
+</div>
+
+<div id="app" style="display:none;">
+    <div class="logout-container">
+        <span id="user-display"></span>
+        <button id="logoutBtn">Kijelentkezés</button>
+    </div>
+    
+    <h1>Bevásárlólista</h1>
+    
+    <div class="controls">
+        <input type="text" id="itemInput" placeholder="Új termék..." style="flex: 1;" />
+        <button id="addBtn" class="btn-primary">➕</button>
     </div>
 
-    <div id="app" style="display:none;">
-        <div class="logout-container">
-            <span id="user-display"></span>
-            <button id="logoutBtn">Kijelentkezés</button>
-        </div>
-        
-        <h1>Bevásárlólista</h1>
-        
-        <div class="controls">
-            <input type="text" id="itemInput" placeholder="Új termék..." style="flex: 1;" />
-            <button id="addBtn" class="btn-primary">➕</button>
-        </div>
-
-        <div class="controls">
-            <select id="storeSelect" style="flex: 1;">
-                <option value="aldi">Aldi</option>
-                <option value="lidl">Lidl</option>
-                <option value="spar">Spar</option>
-            </select>
-            <button id="clearBtn">🗑️</button>
-        </div>
-
-        <ul id="list"></ul>
+    <div class="controls">
+        <select id="storeSelect" style="flex: 1;">
+            <option value="aldi">Aldi</option>
+            <option value="lidl">Lidl</option>
+            <option value="spar">Spar</option>
+        </select>
+        <button id="clearBtn">🗑️</button>
     </div>
+
+    <ul id="list"></ul>
 </div>
 
 <script type="module">
@@ -137,7 +119,7 @@
     let items = [];
 
     const storeOrders = {
-        aldi: ["kávé", "tea", "lekvár", "nutella", "mogyoróvaj", "gabonapehely", "keksz", "csoki", "gumicukor", "édesség", "rágcsa", "snack", "chips", "mogyoró", "banán", "alma", "narancs", "citrom", "vérnarancs", "szőlő", "gyümölcs", "mandarin", "gomba", "krumpli", "bor","fehérbor","vörösbor","vodka","gagyi vodka","gagyivodka","pezsgő","sör", "mosogatógép só", "öblítő", "mosószer", "vízkőoldó", "szemeteszsák", "kukászsák", "kukazsák","tisztítószer","mosogatógép kapszula","tusfürdő","sampon","vattapamacs","fogkefe","fogkrém","dezodor","hagyma","fokhagyma","paparika","paradicsom","újhagyma","tök","lilahagyma","répa","leveszölsdég","zeller","passata","paradicsompüré","paradicsom püré","paprikakrém","kukorica","konzerv kukorica","kukorica konzerv","saviubi","savanyú uborka","paprikakrém","paprika krém","gulyáskrém","olivbogyó","olivabogyó","tészta","mamatészta","mama tészta","szarvacska","spagetti","farfelle","penne","rizs","rizsa","tarhonya","cica kaja","pamacskaja","macska kaja","macskakaja","macska alom", "macskaalom", "cica alom", "cicaalom","olaj","olivaolaj","oliva olaj","liszt","só","cukor","barna cukor","vaníliás cukor","aroma","vanília aroma","rum aroma","citromlé","limelé","mirelit","mirelit borsó","borsó","mirelit kukorica","mirelit brokkoli","brokkoli","zöldbab","mirelit zöldbab","mexikói","vegyes zölsdég","mirelit zöldség","hús","csirkecomb","csirke comb","comb","sertés comb","karaj","tarja","oldalas","szűz","hal","lazac","leves mix","levesmix","máj","kolbász","szárazkolbász","száraz kolbász","szalonna","kolozsvári szalonna","császár szalonna","kolozsváriszalonna","császárszalonna","felvágott","sonka","szalámi","virsli","fűszerek","oregáno","kakukkfű","majoranna","bors","tarkabors","színesbors","kapor","fokhagymapor","fokhagyma por","fokhagymagranulátum","fokhagyma granulátum","leveskocka","ketchup","kecsap","majonéz","mustár","sajt","keménysajt","lapka sajt","lapkasajt","parmezán","grana padano","sajtkrém","sajt krém","krémsajt","tejföl","joghurt","tej","tejszín","tejszínhab","tojás","kenyér","kifli","zsemle","tortilla","péksüti","pékcucc","süti","üccsi","üdítő","kóla","cola","narancslé","gyümölcsle","gyümilé","gyömbér","szörp","pink tonik","pinktonik","pink tonic", "tej"],
+        aldi: ["kávé","tea","lekvár","nutella","mogyoróvaj","gabonapehely","keksz","csoki","gumicukor","édesség","rágcsa","snack","chips","mogyoró","banán","alma","narancs","citrom","vérnarancs","szőlő","gyümölcs","mandarin","gomba","krumpli","bor","fehérbor","vörösbor","vodka","gagyi vodka","gagyivodka","pezsgő","sör","mosogatógép só","öblítő","mosószer","vízkőoldó","szemeteszsák","kukászsák","kukazsák","tisztítószer","mosogatógép kapszula","tusfürdő","sampon","vattapamacs","fogkefe","fogkrém","dezodor","hagyma","fokhagyma","paparika","paradicsom","újhagyma","tök","lilahagyma","répa","leveszölsdég","zeller","passata","paradicsompüré","paradicsom püré","paprikakrém","kukorica","konzerv kukorica","kukorica konzerv","saviubi","savanyú uborka","paprikakrém","paprika krém","gulyáskrém","olivbogyó","olivabogyó","tészta","mamatészta","mama tészta","szarvacska","spagetti","farfelle","penne","rizs","rizsa","tarhonya","cica kaja","pamacskaja","macska kaja","macskakaja","macska alom","macskaalom","cica alom","cicaalom","olaj","olivaolaj","oliva olaj","liszt","só","cukor","barna cukor","vaníliás cukor","aroma","vanília aroma","rum aroma","citromlé","limelé","mirelit","mirelit borsó","borsó","mirelit kukorica","mirelit brokkoli","brokkoli","zöldbab","mirelit zöldbab","mexikói","vegyes zölsdég","mirelit zöldség","hús","csirkecomb","csirke comb","comb","sertés comb","karaj","tarja","oldalas","szűz","hal","lazac","leves mix","levesmix","máj","kolbász","szárazkolbász","száraz kolbász","szalonna","kolozsvári szalonna","császár szalonna","kolozsváriszalonna","császárszalonna","felvágott","sonka","szalámi","virsli","fűszerek","oregáno","kakukkfű","majoranna","bors","tarkabors","színesbors","kapor","fokhagymapor","fokhagyma por","fokhagymagranulátum","fokhagyma granulátum","leveskocka","ketchup","kecsap","majonéz","mustár","sajt","keménysajt","lapka sajt","lapkasajt","parmezán","grana padano","sajtkrém","sajt krém","krémsajt","tejföl","joghurt","tej","tejszín","tejszínhab","tojás","kenyér","kifli","zsemle","tortilla","péksüti","pékcucc","süti","üccsi","üdítő","kóla","cola","narancslé","gyümölcsle","gyümilé","gyömbér","szörp","pink tonik","pinktonik","pink tonic","tej"],
         lidl: ["zöldség", "gyümölcs", "kenyér", "tej", "tojás"],
         spar: ["tej", "kenyér", "tojás", "zöldség", "gyümölcs"]
     };
@@ -147,11 +129,12 @@
         return text.toString().toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
 
+    // --- AUTH LOGIKA ---
     onAuthStateChanged(auth, (user) => {
         if (user) {
             document.getElementById("login-section").style.display = "none";
             document.getElementById("app").style.display = "block";
-            document.getElementById("user-display").textContent = "Szia, " + user.email.split('@')[0] + "!";
+            document.getElementById("user-display").textContent = "Szia, " + (user.email ? user.email.split('@')[0] : "Felhasználó");
             loadData();
         } else {
             document.getElementById("login-section").style.display = "block";
@@ -163,16 +146,24 @@
         const user = document.getElementById("usernameInput").value.trim().toLowerCase();
         const pass = document.getElementById("passInput").value;
         const errorP = document.getElementById("error");
-        if(!user || !pass) { errorP.textContent = "Töltsd ki mindkét mezőt!"; return; }
+
+        if(!user || !pass) {
+            errorP.textContent = "Töltsd ki mindkét mezőt!";
+            return;
+        }
+
         const fakeEmail = user + "@lista.hu";
         try {
             await signInWithEmailAndPassword(auth, fakeEmail, pass);
             errorP.textContent = "";
-        } catch (err) { errorP.textContent = "Hiba: Rossz név vagy jelszó!"; }
+        } catch (err) {
+            errorP.textContent = "Hiba: Rossz név vagy jelszó!";
+        }
     };
 
     window.logout = () => signOut(auth);
 
+    // --- LISTA KEZELÉSE ---
     function loadData() {
         onValue(itemsRef, (snapshot) => {
             items = snapshot.val() || [];
@@ -180,12 +171,15 @@
         });
     }
 
-    function save() { set(itemsRef, items); }
+    function save() {
+        set(itemsRef, items);
+    }
 
     window.addItem = function() {
         const input = document.getElementById("itemInput");
         const val = input.value.trim();
         if (!val) return;
+        
         items.push({ id: Date.now(), name: val, checked: false });
         input.value = "";
         window.sortItems(); 
@@ -193,7 +187,10 @@
 
     window.toggle = (id) => {
         const item = items.find(i => i.id === id);
-        if (item) { item.checked = !item.checked; save(); }
+        if (item) { 
+            item.checked = !item.checked; 
+            save(); 
+        }
     };
 
     window.removeItem = (id) => {
@@ -202,12 +199,16 @@
     };
 
     window.clearList = () => {
-        if (confirm("Törlöd a teljes listát?")) { items = []; save(); }
+        if (confirm("Törlöd a teljes listát?")) { 
+            items = []; 
+            save(); 
+        }
     };
 
     window.sortItems = () => {
         const store = document.getElementById("storeSelect").value;
         const order = storeOrders[store] || [];
+        
         items.sort((a, b) => {
             const ai = order.map(normalize).indexOf(normalize(a.name));
             const bi = order.map(normalize).indexOf(normalize(b.name));
@@ -234,12 +235,16 @@
         });
     }
 
-    document.getElementById("loginBtn").onclick = window.login;
-    document.getElementById("logoutBtn").onclick = window.logout;
-    document.getElementById("addBtn").onclick = window.addItem;
-    document.getElementById("clearBtn").onclick = window.clearList;
-    document.getElementById("storeSelect").onchange = window.sortItems;
-    document.getElementById("itemInput").onkeypress = (e) => e.key === "Enter" && window.addItem();
+    // Eseménykezelők
+    document.getElementById("loginBtn").addEventListener("click", window.login);
+    document.getElementById("logoutBtn").addEventListener("click", window.logout);
+    document.getElementById("addBtn").addEventListener("click", window.addItem);
+    document.getElementById("clearBtn").addEventListener("click", window.clearList);
+    document.getElementById("storeSelect").addEventListener("change", window.sortItems);
+    document.getElementById("itemInput").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") window.addItem();
+    });
+
 </script>
 </body>
 </html>
