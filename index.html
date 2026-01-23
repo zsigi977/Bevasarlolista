@@ -18,6 +18,7 @@
         h1 { text-align: center; margin-top: 10px; }
         .controls { display: flex; gap: 10px; margin-bottom: 15px; }
         select, input, button { padding: 12px; border-radius: 10px; border: 1px solid #ccc; font-size: 16px; outline: none; }
+        input { background: white; -webkit-appearance: none; }
         input:focus { border-color: #007aff; }
         button { cursor: pointer; background: #fff; transition: opacity 0.2s; }
         button:active { opacity: 0.7; }
@@ -37,7 +38,7 @@
 <div id="login-section">
     <h1>🛒 Lista</h1>
     <div id="login-form">
-        <input type="text" id="usernameInput" placeholder="Felhasználónév" />
+        <input type="text" id="usernameInput" placeholder="Felhasználónév" autocorrect="off" autocapitalize="none" />
         <input type="password" id="passInput" placeholder="Jelszó" />
         <button id="loginBtn" class="btn-primary">Belépés</button>
         <p id="error" style="color:#ff3b30; font-size: 14px; margin-top: 10px;"></p>
@@ -74,9 +75,11 @@
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+    // FONTOS: Beletettem a databaseURL-t, ez elengedhetetlen!
     const firebaseConfig = {
         apiKey: "AIzaSyCslE4Kc229j41Sm2l7ovpc_KEWhOb107k",
         authDomain: "bevasarlolista-dd660.firebaseapp.com",
+        databaseURL: "https://bevasarlolista-dd660-default-rtdb.firebaseio.com",
         projectId: "bevasarlolista-dd660",
         storageBucket: "bevasarlolista-dd660.firebasestorage.app",
         messagingSenderId: "482885096675",
@@ -97,15 +100,16 @@
     };
 
     function normalize(text) {
-        return text ? text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
+        if (!text) return "";
+        return text.toString().toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
 
-    // --- BELÉPÉSI LOGIKA ---
+    // --- AUTH LOGIKA ---
     onAuthStateChanged(auth, (user) => {
         if (user) {
             document.getElementById("login-section").style.display = "none";
             document.getElementById("app").style.display = "block";
-            document.getElementById("user-display").textContent = "Szia, " + user.email.split('@')[0] + "!";
+            document.getElementById("user-display").textContent = "Szia, " + (user.email ? user.email.split('@')[0] : "Felhasználó");
             loadData();
         } else {
             document.getElementById("login-section").style.display = "block";
@@ -124,7 +128,6 @@
         }
 
         const fakeEmail = user + "@lista.hu";
-
         try {
             await signInWithEmailAndPassword(auth, fakeEmail, pass);
             errorP.textContent = "";
@@ -179,11 +182,11 @@
 
     window.sortItems = () => {
         const store = document.getElementById("storeSelect").value;
-        const order = storeOrders[store];
+        const order = storeOrders[store] || [];
+        
         items.sort((a, b) => {
             const ai = order.map(normalize).indexOf(normalize(a.name));
             const bi = order.map(normalize).indexOf(normalize(b.name));
-            // Ha nincs a listában, menjen a végére (999)
             const posA = ai === -1 ? 999 : ai;
             const posB = bi === -1 ? 999 : bi;
             return posA - posB;
@@ -207,15 +210,15 @@
         });
     }
 
-    // Eseménykezelők bekötése
-    document.getElementById("loginBtn").onclick = window.login;
-    document.getElementById("logoutBtn").onclick = window.logout;
-    document.getElementById("addBtn").onclick = window.addItem;
-    document.getElementById("clearBtn").onclick = window.clearList;
-    document.getElementById("storeSelect").onchange = window.sortItems;
-    document.getElementById("itemInput").onkeypress = (e) => {
+    // Eseménykezelők
+    document.getElementById("loginBtn").addEventListener("click", window.login);
+    document.getElementById("logoutBtn").addEventListener("click", window.logout);
+    document.getElementById("addBtn").addEventListener("click", window.addItem);
+    document.getElementById("clearBtn").addEventListener("click", window.clearList);
+    document.getElementById("storeSelect").addEventListener("change", window.sortItems);
+    document.getElementById("itemInput").addEventListener("keypress", (e) => {
         if (e.key === "Enter") window.addItem();
-    };
+    });
 
 </script>
 </body>
