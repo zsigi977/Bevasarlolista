@@ -68,26 +68,39 @@
       text-align: center;
     }
   </style>
-  <script>
-     const PASSWORD = "999111";
-
-// Ellenőrizzük, van-e már tárolt helyes jelszó
-const savedPass = localStorage.getItem("bevListaPass");
-
-if (savedPass !== PASSWORD) {
-  const userPass = prompt("Add meg a jelszót a Bevásárlólistához:");
-  if (userPass !== PASSWORD) {
-    alert("Hozzáférés megtagadva!");
-    document.body.innerHTML = "<h1>Hozzáférés megtagadva</h1>";
-    throw "Hozzáférés megtagadva";
-  }
-  // Ha jó a jelszó, elmentjük a localStorage-ba
-  localStorage.setItem("bevListaPass", PASSWORD);
-}
-  </script>
 </head>
 <body>
+  <div id="login" style="text-align:center; margin-top:50px;">
+    <h2>Jelszó a Bevásárlólistához</h2>
+    <input type="password" id="passInput" placeholder="Jelszó" />
+    <button onclick="checkPass()">Belépés</button>
+    <p id="error" style="color:red;"></p>
+  </div>
 
+  <div id="app" style="display:none;">
+    <!-- Ide jön a bevásárlólista HTML -->
+  </div>
+
+<script>
+const PASSWORD = "999111";
+
+function checkPass() {
+  const userPass = document.getElementById("passInput").value;
+  if(userPass === PASSWORD) {
+    localStorage.setItem("bevListaPass", PASSWORD);
+    document.getElementById("login").style.display = "none";
+    document.getElementById("app").style.display = "block";
+  } else {
+    document.getElementById("error").textContent = "Helytelen jelszó!";
+  }
+}
+
+// Ha már mentve van a jelszó
+if(localStorage.getItem("bevListaPass") === PASSWORD) {
+  document.getElementById("login").style.display = "none";
+  document.getElementById("app").style.display = "block";
+}
+</script>
   <h1>🛒 Bevásárlólista</h1>
 
   <div class="controls">
