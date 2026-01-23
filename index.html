@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bevásárlólista</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f2f2f7;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    select, input, button {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      cursor: pointer;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: white;
+      padding: 12px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      cursor: grab;
+    }
+    .left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .checked {
+      text-decoration: line-through;
+      color: gray;
+    }
+    .delete {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: red;
+    }
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🛒 Bevásárlólista</h1>
+
+  <div class="controls">
+    <input type="text" id="itemInput" placeholder="Új termék" />
+    <button onclick="addItem()">➕</button>
+  </div>
+
+  <div class="controls">
+    <select id="storeSelect" onchange="sortItems()">
+      <option value="aldi">Aldi</option>
+      <option value="lidl">Lidl</option>
+      <option value="spar">Spar</option>
+    </select>
+    <button onclick="clearList()">🗑️ Lista törlése</button>
+  </div>
+
+  <ul id="list"></ul>
+
+  <script>
+    let items = JSON.parse(localStorage.getItem("items")) || [];
+
+    const storeOrders = {
+      aldi: ["kávé", "tea", "lekvár", "nutella", "mogyoróvaj", "gabonapehely", "keksz", "csoki", "gumicukor", "édesség", "rágcsa", "snack", "chips", "mogyoró", "banán", "alma", "narancs", "citrom", "vérnarancs", "szőlő", "gyümölcs", "mandarin", "gomba", "krumpli", "bor","fehérbor","vörösbor","vodka","gagyi vodka","gagyivodka","pezsgő","sör", "mosogatógép só", "öblítő", "mosószer", "vízkőoldó", "szemeteszsák", "kukászsák", "kukazsák","tisztítószer","mosogatógép kapszula","tusfürdő","sampon","vattapamacs","fogkefe","fogkrém","dezodor","hagyma","fokhagyma","paparika","paradicsom","újhagyma","tök","lilahagyma","répa","leveszölsdég","zeller","passata","paradicsompüré","paradicsom püré","paprikakrém","kukorica","konzerv kukorica","kukorica konzerv","saviubi","savanyú uborka","paprikakrém","paprika krém","gulyáskrém","olivbogyó","olivabogyó","tészta","mamatészta","mama tészta","szarvacska","spagetti","farfelle","penne","rizs","rizsa","tarhonya","cica kaja","pamacskaja","macska kaja","macskakaja","macska alom", "macskaalom", "cica alom", "cicaalom","olaj","olivaolaj","oliva olaj","liszt","só","cukor","barna cukor","vaníliás cukor","aroma","vanília aroma","rum aroma","citromlé","limelé","mirelit","mirelit borsó","borsó","mirelit kukorica","mirelit brokkoli","brokkoli","zöldbab","mirelit zöldbab","mexikói","vegyes zölsdég","mirelit zöldség","hús","csirkecomb","csirke comb","comb","sertés comb","karaj","tarja","oldalas","szűz","hal","lazac","leves mix","levesmix","máj","kolbász","szárazkolbász","száraz kolbász","szalonna","kolozsvári szalonna","császár szalonna","kolozsváriszalonna","császárszalonna","felvágott","sonka","szalámi","virsli","fűszerek","oregáno","kakukkfű","majoranna","bors","tarkabors","színesbors","kapor","fokhagymapor","fokhagyma por","fokhagymagranulátum","fokhagyma granulátum","leveskocka","ketchup","kecsap","majonéz","mustár","sajt","keménysajt","lapka sajt","lapkasajt","parmezán","grana padano","sajtkrém","sajt krém","krémsajt","tejföl","joghurt","tej","tejszín","tejszínhab","tojás","kenyér","kifli","zsemle","tortilla","péksüti","pékcucc","süti","üccsi","üdítő","kóla","cola","narancslé","gyümölcslé","gyümilé","gyömbér","szörp","pink tonik","pinktonik","pink tonic","tej"],
+      lidl: ["zöldség", "gyümölcs", "kenyér", "tej", "tojás"],
+      spar: ["tej", "kenyér", "tojás", "zöldség", "gyümölcs"]
+    };
+
+    function normalize(text) {
+      return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function save() {
+      localStorage.setItem("items", JSON.stringify(items));
+    }
+
+    function addItem() {
+      const input = document.getElementById("itemInput");
+      const value = input.value.trim();
+      if (!value) return;
+
+      const exists = items.some(item => normalize(item.name) === normalize(value));
+      if (exists) {
+        alert("Ez az elem már szerepel a listában!");
+        input.value = "";
+        return;
+      }
+
+      items.push({
+        id: Date.now(),
+        name: value,
+        checked: false
+      });
+
+      input.value = "";
+      sortItems();
+    }
+
+    function toggle(id) {
+      const item = items.find(i => i.id === id);
+      item.checked = !item.checked;
+      save();
+      render();
+    }
+
+    function removeItem(id) {
+      items = items.filter(i => i.id !== id);
+      save();
+      render();
+    }
+
+    function clearList() {
+      if (!confirm("Biztos törlöd az egész listát?")) return;
+      items = [];
+      save();
+      render();
+    }
+
+    function sortItems() {
+      const store = document.getElementById("storeSelect").value;
+      const order = storeOrders[store];
+      items.sort((a, b) => {
+        const ai = order.map(normalize).indexOf(normalize(a.name));
+        const bi = order.map(normalize).indexOf(normalize(b.name));
+        return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+      });
+      save();
+      render();
+    }
+
+    function render() {
+      const ul = document.getElementById("list");
+      ul.innerHTML = "";
+      items.forEach(item => {
+        const li = document.createElement("li");
+        li.draggable = true;
+        li.dataset.id = item.id;
+
+        li.addEventListener("dragstart", e => {
+          e.dataTransfer.setData("text/plain", item.id);
+        });
+
+        li.addEventListener("dragover", e => {
+          e.preventDefault();
+        });
+
+        li.addEventListener("drop", e => {
+          e.preventDefault();
+          const draggedId = parseInt(e.dataTransfer.getData("text/plain"));
+          const draggedIndex = items.findIndex(i => i.id === draggedId);
+          const targetIndex = items.findIndex(i => i.id === item.id);
+          if (draggedIndex === -1) {
+            // új elem, ide lehet beszúrni
+            const newItem = { id: draggedId, name: "Új elem", checked: false };
+            items.splice(targetIndex, 0, newItem);
+          } else {
+            // meglévő elem áthelyezése
+            const [moved] = items.splice(draggedIndex, 1);
+            items.splice(targetIndex, 0, moved);
+          }
+          save();
+          render();
+        });
+
+        const left = document.createElement("div");
+        left.className = "left";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = item.checked;
+        checkbox.onclick = () => toggle(item.id);
+
+        const span = document.createElement("span");
+        span.textContent = item.name;
+        if (item.checked) span.className = "checked";
+
+        left.appendChild(checkbox);
+        left.appendChild(span);
+
+        const del = document.createElement("button");
+        del.textContent = "🗑️";
+        del.className = "delete";
+        del.onclick = () => removeItem(item.id);
+
+        li.appendChild(left);
+        li.appendChild(del);
+        ul.appendChild(li);
+      });
+    }
+
+    document.getElementById("itemInput").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        addItem();
+      }
+    });
+
+    render();
+  </script>
+
+</body>
+</html>
