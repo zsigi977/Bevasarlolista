@@ -71,11 +71,11 @@
 </head>
 <body>
   <div id="login" style="text-align:center; margin-top:50px;">
-    <h2>Jelszó a Bevásárlólistához</h2>
-    <input type="password" id="passInput" placeholder="Jelszó" />
-    <button onclick="checkPass()">Belépés</button>
-    <p id="error" style="color:red;"></p>
-  </div>
+  <h2>Jelszó a Bevásárlólistához</h2>
+  <input type="password" id="passInput" placeholder="Jelszó" />
+  <button onclick="checkPass()">Belépés</button>
+  <p id="error" style="color:red;"></p>
+</div>
 
 <div id="app" style="display:none;">
   <h1>🛒 Bevásárlólista</h1>
@@ -97,15 +97,21 @@
   <ul id="list"></ul>
 </div>
 
-  <script>
-    const PASSWORD = "999111";
+<script>
+const PASSWORD = "999111";
+let items = JSON.parse(localStorage.getItem("items")) || [];
+
+function showApp() {
+  document.getElementById("login").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  render(); // csak itt rendereljük a listát
+}
 
 function checkPass() {
   const userPass = document.getElementById("passInput").value;
   if(userPass === PASSWORD) {
     localStorage.setItem("bevListaPass", PASSWORD);
-    document.getElementById("login").style.display = "none";
-    document.getElementById("app").style.display = "block";
+    showApp();
   } else {
     document.getElementById("error").textContent = "Helytelen jelszó!";
   }
@@ -113,8 +119,7 @@ function checkPass() {
 
 // Ha már mentve van a jelszó
 if(localStorage.getItem("bevListaPass") === PASSWORD) {
-  document.getElementById("login").style.display = "none";
-  document.getElementById("app").style.display = "block";
+  showApp();
 }
     let items = JSON.parse(localStorage.getItem("items")) || [];
 
