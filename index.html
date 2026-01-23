@@ -81,26 +81,6 @@
     <!-- Ide jön a bevásárlólista HTML -->
   </div>
 
-<script>
-const PASSWORD = "999111";
-
-function checkPass() {
-  const userPass = document.getElementById("passInput").value;
-  if(userPass === PASSWORD) {
-    localStorage.setItem("bevListaPass", PASSWORD);
-    document.getElementById("login").style.display = "none";
-    document.getElementById("app").style.display = "block";
-  } else {
-    document.getElementById("error").textContent = "Helytelen jelszó!";
-  }
-}
-
-// Ha már mentve van a jelszó
-if(localStorage.getItem("bevListaPass") === PASSWORD) {
-  document.getElementById("login").style.display = "none";
-  document.getElementById("app").style.display = "block";
-}
-</script>
   <h1>🛒 Bevásárlólista</h1>
 
   <div class="controls">
@@ -120,6 +100,24 @@ if(localStorage.getItem("bevListaPass") === PASSWORD) {
   <ul id="list"></ul>
 
   <script>
+    const PASSWORD = "999111";
+
+function checkPass() {
+  const userPass = document.getElementById("passInput").value;
+  if(userPass === PASSWORD) {
+    localStorage.setItem("bevListaPass", PASSWORD);
+    document.getElementById("login").style.display = "none";
+    document.getElementById("app").style.display = "block";
+  } else {
+    document.getElementById("error").textContent = "Helytelen jelszó!";
+  }
+}
+
+// Ha már mentve van a jelszó
+if(localStorage.getItem("bevListaPass") === PASSWORD) {
+  document.getElementById("login").style.display = "none";
+  document.getElementById("app").style.display = "block";
+}
     let items = JSON.parse(localStorage.getItem("items")) || [];
 
     const storeOrders = {
