@@ -62,13 +62,13 @@
   </div>
 
   <script>
-    // Firebase config – cseréld a sajátodra
+    // 🔹 Firebase config – cseréld a saját projekted adataira!
     const firebaseConfig = {
       apiKey: "API_KEYED",
-      authDomain: "bevasarlolista-dd660.firebaseapp.com",
-      databaseURL: "https://bevasarlolista-dd660-default-rtdb.firebaseio.com/",
-      projectId: "PROJECT_ID",
-      storageBucket: "PROJECT_ID.appspot.com",
+      authDomain: "bevasarlolista-dd660.firebaseapp.com",  // csak a domain, ne a /__/auth/handler!
+      databaseURL: "https://bevasarlolista-dd660-default-rtdb.firebaseio.com",
+      projectId: "bevasarlolista-dd660",
+      storageBucket: "bevasarlolista-dd660.appspot.com",
       messagingSenderId: "SENDER_ID",
       appId: "APP_ID"
     };
@@ -120,7 +120,9 @@
 
     // Firebase mentés
     function save() {
-      database.ref('items').set(items);
+      database.ref('items').set(items)
+        .then(() => console.log("Mentve a Firebase-be"))
+        .catch(err => console.error("Hiba a mentésnél:", err));
     }
 
     // Lista funkciók
@@ -162,7 +164,7 @@
       render(); // opcionális
     }
 
-    // Belépés
+    // 🔹 Belépés
     function login() {
       const email = document.getElementById("emailInput").value;
       const password = document.getElementById("passInput").value;
@@ -174,7 +176,7 @@
         })
         .catch(error => {
           document.getElementById("error").textContent = "Helytelen email vagy jelszó!";
-          console.error(error);
+          console.error("Firebase login hiba:", error);
         });
     }
 
@@ -189,7 +191,6 @@
     document.getElementById("itemInput").addEventListener("keypress", e => {
       if (e.key === "Enter") addItem();
     });
-
   </script>
 </body>
 </html>
