@@ -25,25 +25,27 @@
         }
 
         #login-section, #app {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 20px; padding: 25px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             width: 90%; max-width: 400px;
             margin-top: 20px;
             position: relative;
+            z-index: 10;
         }
 
-        h1 { text-align: center; margin-bottom: 20px; font-size: 24px; }
+        h1 { text-align: center; margin-bottom: 20px; font-size: 24px; color: #1c1c1e; }
         .controls { display: flex; gap: 10px; margin-bottom: 15px; position: relative; }
         
         input[type="text"], input[type="password"], select { 
             padding: 12px; border-radius: 10px; border: 1px solid #ccc; 
             font-size: 16px; outline: none; background: #fff !important;
             color: #000; width: 100%; box-sizing: border-box;
+            -webkit-appearance: none;
         }
 
-        button { padding: 12px; border-radius: 10px; border: none; cursor: pointer; font-size: 16px; }
+        button { padding: 12px; border-radius: 10px; border: none; cursor: pointer; font-size: 16px; transition: opacity 0.2s; }
+        button:active { opacity: 0.7; }
         .btn-primary { background: #007aff; color: white; font-weight: 600; }
         
         #custom-suggestions {
@@ -164,7 +166,6 @@
         const container = document.getElementById("custom-suggestions");
         container.innerHTML = "";
         
-        // Trükk: ha számmal kezdődik a bevitel, csak a szöveges részt nézzük az ajánlóhoz
         let term = normalize(searchValue);
         const match = term.match(/^[\d.,/ ]*(db|kg|l|liter|g|cs)?\s*(.*)$/i);
         if (match && match[2]) term = match[2];
@@ -183,7 +184,6 @@
                 div.className = "suggestion-item";
                 div.textContent = product;
                 div.onclick = () => {
-                    // Ha volt beírva mennyiség, azt tartsuk meg!
                     const currentVal = document.getElementById("itemInput").value;
                     const qMatch = currentVal.match(/^([\d.,/ ]+(db|kg|l|liter|g|cs)?\s*)/i);
                     const prefix = qMatch ? qMatch[1] : "";
@@ -218,7 +218,7 @@
         if(!user || !pass) return;
         try {
             await signInWithEmailAndPassword(auth, user + "@lista.hu", pass);
-        } catch (err) { document.getElementById("error").textContent = "Hiba!"; }
+        } catch (err) { document.getElementById("error").textContent = "Hiba: Rossz név vagy jelszó!"; }
     };
 
     window.logout = () => signOut(auth);
@@ -235,15 +235,21 @@
         let val = input.value.trim();
         if (!val) return;
 
-        // FELISMERŐ LOGIKA: (szám + választható mértékegység) + terméknév
         const quantityMatch = val.match(/^([\d.,/ ]+(db|kg|l|liter|g|cs)?)\s+(.*)$/i);
-        
         let quantity = "";
         let itemName = val;
 
         if (quantityMatch) {
             quantity = quantityMatch[1].trim(); 
             itemName = quantityMatch[3].trim(); 
+        }
+
+        // DUPLIKÁCIÓ ELLENŐRZÉSE: ha már van ilyen névvel tétel, csak töröljük az inputot és kilépünk
+        const isDuplicate = items.some(item => normalize(item.name) === normalize(itemName));
+        if (isDuplicate) {
+            input.value = "";
+            document.getElementById("custom-suggestions").style.display = "none";
+            return;
         }
 
         items.push({ 
@@ -272,7 +278,7 @@
     };
 
     window.clearList = () => {
-        if (confirm("Törlöd a listát?")) { items = []; set(itemsRef, items); }
+        if (confirm("Törlöd a teljes listát?")) { items = []; set(itemsRef, items); }
     };
 
     window.sortItems = () => {
@@ -282,7 +288,9 @@
             if (a.checked !== b.checked) return a.checked ? 1 : -1;
             const ai = order.map(normalize).indexOf(normalize(a.name));
             const bi = order.map(normalize).indexOf(normalize(b.name));
-            return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+            const posA = ai === -1 ? 999 : ai;
+            const posB = bi === -1 ? 999 : bi;
+            return posA - posB;
         });
         set(itemsRef, items);
     };
@@ -341,7 +349,6 @@
             document.getElementById("custom-suggestions").style.display = "none";
         }
     });
-
 </script>
 </body>
 </html>
